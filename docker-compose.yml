@@ -1,5 +1,5 @@
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: docker/Dockerfile.backend
@@ -16,6 +16,8 @@ services:
         condition: service_healthy
       phoenix:
         condition: service_started
+      ollama-checker:
+        condition: service_completed_successfully
     develop:
       watch:
         - action: sync
@@ -57,6 +59,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  ollama-checker:
+    image: curlimages/curl:latest
+    env_file:
+      - ./.env
+    network_mode: host
+    volumes:
+      - ./docker/ollama-checker.sh:/scripts/ollama-checker.sh:ro
+    entrypoint: ["sh", "/scripts/ollama-checker.sh"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   pgvector_data:
