@@ -11,12 +11,15 @@ services:
       PORT: "${PORT}"
       PHOENIX_COLLECTOR_ENDPOINT: "http://phoenix:4317"
       RELOAD: "true"
+      DB_HOST: pgvector
     depends_on:
       pgvector:
         condition: service_healthy
       phoenix:
         condition: service_started
       ollama-checker:
+        condition: service_completed_successfully
+      db-migration:
         condition: service_completed_successfully
     develop:
       watch:
@@ -25,6 +28,19 @@ services:
           target: /app/src
           ignore:
             - __pycache__/
+
+  db-migration:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.migration
+    env_file:
+      - ./.env
+    environment:
+      DB_HOST: pgvector
+    depends_on:
+      pgvector:
+        condition: service_healthy
+    restart: "no"
 
   pgvector:
     image: pgvector/pgvector:pg16
