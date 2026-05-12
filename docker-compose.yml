@@ -3,15 +3,13 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.backend
-    ports:
-      - "${PORT:-3001}:${PORT:-3001}"
+    network_mode: host
     env_file:
       - ./.env
     environment:
       PORT: "${PORT}"
       PHOENIX_COLLECTOR_ENDPOINT: "http://phoenix:4317"
       RELOAD: "true"
-      DB_HOST: pgvector
     depends_on:
       pgvector:
         condition: service_healthy

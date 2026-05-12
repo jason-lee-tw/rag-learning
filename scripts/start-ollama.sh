@@ -17,4 +17,4 @@ OLLAMA_FLASH_ATTENTION=true \
   OLLAMA_MODELS=~/.ollama/models \
   OLLAMA_KV_CACHE_TYPE=f16 \
   OLLAMA_NO_CACHE=false \
-  ollama serve
+  nohup ollama serve >/dev/null 2>&1 &
