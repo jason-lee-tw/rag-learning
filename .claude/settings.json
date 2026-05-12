@@ -1,0 +1,8 @@
+{
+  "model": "sonnet[1m]",
+  "permissions": {
+    "deny": ["Read(**/.env)"],
+    "defaultMode": "auto",
+    "disableBypassPermissionsMode": "disable"
+  }
+}

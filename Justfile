@@ -32,3 +32,15 @@ lint:
 [group: "Format"]
 format:
   @uv run ruff format .
+
+# Start Ollama
+[group: "Ollama"]
+up-ollama:
+  @chmod +x ./scripts/start-ollama.sh
+  @bash ./scripts/start-ollama.sh
+
+# Stop Ollama
+[group: "Ollama"]
+down-ollama:
+  @chmod +x ./scripts/stop-ollama.sh
+  @bash ./scripts/stop-ollama.sh
