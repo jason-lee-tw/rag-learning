@@ -12,7 +12,7 @@ def register_phoenix_tracer():
   try:
     register(
       endpoint=endpoint,
-      project_name='chat-bot',
+      project_name='rag-example',
       protocol='grpc',
       batch=True,
     )
