@@ -5,6 +5,7 @@ Revises:
 Create Date: 2026-05-12 00:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
@@ -17,8 +18,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute('CREATE EXTENSION IF NOT EXISTS vector')
+  op.execute('CREATE EXTENSION IF NOT EXISTS vector')
 
 
 def downgrade() -> None:
-    op.execute('DROP EXTENSION IF EXISTS vector')
+  op.execute('DROP EXTENSION IF EXISTS vector')

@@ -1,30 +1,33 @@
-from uuid import uuid7
+import os
+from pathlib import Path
 
-from fastapi import APIRouter
-from langchain_core.documents import Document
+from fastapi import APIRouter, HTTPException
 
-from ai_agents.rag.embedding import embedding
-from modules.rag.dtos.create_document import CreateDocumentReqBody
+from modules.rag.rag_service import ingest_documents as ingest_documents_fn
 
 router = APIRouter(prefix='/rag')
 
+
 @router.post('/')
-def create_documents(body: CreateDocumentReqBody):
-  documents = body.documents
+def ingest_documents():
+  folder_path = os.getenv('PENDING_DIGEST_FOLDER_PATH')
+  if not folder_path:
+    raise HTTPException(
+      status_code=500,
+      detail='`PENDING_DIGEST_FOLDER_PATH` is not defined.',
+    )
 
-  parsed_documents = [
-    Document(
-      page_content=doc.content,
-      metadata={
-        "id": str(uuid7()),
-        "source": doc.source,
-        "document_name": doc.full_name
-      }
-    ) for doc in documents
-  ]
+  folder = Path(folder_path)
+  if not folder.is_dir():
+    raise HTTPException(
+      status_code=500,
+      detail=f'Folder `{folder_path}` does not exist.',
+    )
 
-  embedding(documents=parsed_documents)
+  files_by_name = {f.name: f for f in folder.iterdir() if f.is_file()}
+  result = ingest_documents_fn(files_by_name)
 
   return {
-    "message": "ok"
+    'ingested': result.ingested,
+    'skipped': result.skipped,
   }
