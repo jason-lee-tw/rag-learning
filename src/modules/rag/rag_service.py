@@ -18,10 +18,12 @@ def filter_pending_documents(document_names: list[str]) -> list[str]:
 
   return [name for name in document_names if name not in existing_names]
 
+
 @dataclass
 class IngestDocuments:
   ingested: list[str]
   skipped: list[str]
+
 
 def ingest_documents(files_by_name: dict[str, Path]) -> IngestDocuments:
   pending_names = filter_pending_documents(list(files_by_name.keys()))
@@ -56,7 +58,4 @@ def ingest_documents(files_by_name: dict[str, Path]) -> IngestDocuments:
 
   skipped_names = sorted(name for name in files_by_name if name not in pending_names)
 
-  return IngestDocuments(
-    ingested=sorted(pending_names),
-    skipped=skipped_names
-  )
+  return IngestDocuments(ingested=sorted(pending_names), skipped=skipped_names)
