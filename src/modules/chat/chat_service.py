@@ -7,14 +7,15 @@ from langchain_core.messages import (
   SystemMessage,
   ToolMessage,
 )
-from langchain_core.prompts import ChatMessagePromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 from ai_agents.base_agent import BaseAgent
+from ai_agents.rag.retrieving import get_retriever
 from modules.chat.dto.chat_dto import ChatHistoryDTO
 
 
-def _get_prompt_template() -> ChatMessagePromptTemplate:
-  template = ChatMessagePromptTemplate.from_template(
+def _get_prompt_template() -> ChatPromptTemplate:
+  template = ChatPromptTemplate.from_template(
     """# Instruction
 Answer the message based only on the following context.
 
@@ -82,11 +83,26 @@ def process_chat(chat_list: list[ChatHistoryDTO]) -> AIMessage:
 
 
 def process_chat_with_rag(chat_list: list[ChatHistoryDTO]) -> AIMessage:
-  # prompt_template = _get_prompt_template()
+  # Retrieve relevant documents
+  user_query = chat_list[-1].content
+  docs = get_retriever().invoke(user_query)
+  context = _format_docs(docs=docs)
 
+  # Generate prompt
+  prompt_template = _get_prompt_template()
+  message_list_with_context = prompt_template.format_messages(
+    context=context, question=user_query
+  )
+
+  # Generate new message list
+  new_chat_list = chat_list[:-1]
+  for message in message_list_with_context:
+    chat = ChatHistoryDTO(role='user', content=message.content)
+    new_chat_list.append(chat)
+  message_list = _convert_chat_list(new_chat_list)
+
+  # Send message to LLM
   agent = BaseAgent()
-
-  messages = _convert_chat_list(chat_list)
-  agent_res = agent.chat(messages=messages)
+  agent_res = agent.chat(messages=message_list)
 
   return agent_res
