@@ -6,15 +6,25 @@ help:
 init:
   @uv sync
 
-# Run capstone project with Docker
+# Run all apps with Docker
 [group: "App"]
 up-build:
   @docker compose -f ./docker-compose.yml up --build -w
 
-# Stop App docker containers
+# Stop all apps
 [group: "App"]
 down:
   @docker compose -f ./docker-compose.yml down
+
+# Start all services including Ollama
+[group: "App"]
+up-all:
+  @just up-ollama up-build
+
+# Stop all services including Ollama
+[group: "App"]
+down-all:
+  @just down-ollama down
 
 # Stop App docker containers and remove volumes
 [group: "Clean up"]
