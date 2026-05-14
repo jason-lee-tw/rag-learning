@@ -33,6 +33,13 @@ down-clean:
     echo "🔄 Deleting all unused volumes..." && \
     docker volume prune -af
 
+[group: "Clean up"]
+clean-python:
+  @rm -rf **/.venv ./.venv
+  @echo "'.venv' folders are deleted."
+  @find . -not -path './.git/*' -type d \( -name "__pycache__" -o -name ".pytest_cache" \) -exec rm -rf {} + 2>/dev/null; find . -not -path './.git/*' -name "*.pyc" -delete
+  @echo "All cached files are deleted."
+
 # Lint
 [group: "Format"]
 lint:
