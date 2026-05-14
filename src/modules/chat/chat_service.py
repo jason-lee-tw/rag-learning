@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import HTTPException
 from langchain_core.documents import Document
 from langchain_core.messages import (
@@ -7,7 +9,9 @@ from langchain_core.messages import (
   SystemMessage,
   ToolMessage,
 )
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough, RunnableSerializable
 
 from ai_agents.base_agent import BaseAgent
 from ai_agents.rag.retrieving import get_retriever
@@ -76,6 +80,31 @@ def _convert_chat_list(chat_list: list[ChatHistoryDTO]) -> list[BaseMessage]:
   return result
 
 
+def _create_retrival_chain_with_lcel() -> RunnableSerializable[dict[str, Any], str]:
+  from operator import itemgetter
+
+  prompt_template = _get_prompt_template()
+  llm_model = BaseAgent().get_model()
+  output_parser = StrOutputParser()
+
+  retriever = get_retriever()
+
+  # This chain will be invoked with input dictionary ({'question': str})
+  retrieval_chain = (
+    # `RunnablePassthrough.assign` will add the output of the sub chain into
+    # the input dictionary, then pipe into the next runnable
+    RunnablePassthrough.assign(
+      # itemgetter here simply get the value of `question` in the dictionary
+      context=(itemgetter('question') | retriever | _format_docs)
+    )
+    | prompt_template
+    | llm_model
+    | output_parser
+  )
+
+  return retrieval_chain
+
+
 def process_chat(chat_list: list[ChatHistoryDTO]) -> AIMessage:
   agent = BaseAgent()
 
@@ -109,3 +138,12 @@ def process_chat_with_rag(chat_list: list[ChatHistoryDTO]) -> AIMessage:
   agent_res = agent.chat(messages=message_list)
 
   return agent_res
+
+
+def process_chat_with_lcel(chat_list: list[ChatHistoryDTO]) -> AIMessage:
+  user_query = chat_list[-1].content
+
+  chain = _create_retrival_chain_with_lcel()
+  result = chain.invoke({'question': user_query})
+
+  return AIMessage(result)

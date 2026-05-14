@@ -19,3 +19,6 @@ class BaseAgent:
     res = self.__model.invoke(input=messages)
     message = res.content
     return AIMessage(content=message)
+
+  def get_model(self) -> BaseChatModel:
+    return self.__model
