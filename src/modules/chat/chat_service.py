@@ -22,13 +22,16 @@ Answer the message based only on the following context.
 ---
 
 ## Context
-
+```
 {context}
+```
 
 ---
 
 ## User Question
+```
 {question}
+```
 
 ---
 
